@@ -6,7 +6,6 @@
 #include <algorithm>
 using namespace std;
 
-
 char* enter() {
 	char *ent = new char[30];
 
@@ -19,23 +18,27 @@ char* enter() {
 }
 
 
-uint8_t getBit(uint8_t num, int index) {
+uint8_t getBit(uint8_t number, int index) {
 
-	num = num & (1 << index);
-	num = num >> index;
+	number = number & (1 << index);
+	number = number >> index;
 
-	return num;
+	return number;
 }
 
 class Viterbi {
 public:
 
 	uint8_t number;
-	int registr_size;
 
-	Viterbi(uint8_t number){
+	int register_size = 0;
+
+	vector<uint8_t> polynoms;
+
+	Viterbi(uint8_t number, const vector<uint8_t>& polynoms){
 
 		this->number = number;
+		this->polynoms = polynoms;
 
 	}
 
@@ -53,25 +56,107 @@ public:
 
 	int8_t sumBit(uint8_t number, const vector<uint8_t>& polynoms);
 
-	int get_Registr_Size(const vector<uint8_t>& polynoms);
-
-	
 	};
 
 	class Coder_Viterbi : public Viterbi {
 	public:
 
-		vector<uint8_t> polynoms;
+		Coder_Viterbi(uint8_t number, const vector<uint8_t>& polynoms):Viterbi(number,polynoms){
 			
-		Coder_Viterbi(uint8_t number, const vector<uint8_t>& polynoms):Viterbi(number){
-			
-			this->polynoms = polynoms;
-			this->registr_size = get_Registr_Size(polynoms);
-		}
+			this->register_size = get_Registr_Size(polynoms);
 
+		}
 
 		uint16_t coding(uint8_t number, vector<uint8_t>& polynoms);
 
+		int get_Registr_Size(const vector<uint8_t>& polynoms);
+
+	};
+
+	class Decoder_Viterbi : public Viterbi {
+	public:
+		class Grid { // Вычислительная решетка
+			
+		public:
+			class ZZ;
+
+			int size;
+			vector<ZZ> array;
+			
+
+			void print() {
+				for (int i = 0; i < size; i++)
+				{
+				cout << bitset<sizeof(uint8_t) * 8>(i) <<"/t"<<"val0 = "<<array.at(i).val0 << "| val1 = " << array.at(i).val1 << endl;
+
+				}
+
+			}
+
+			void init(int size) {
+				this->size = size;
+				array.reserve(size);
+			}
+			
+			Grid() {
+				this->size = 0;
+			}
+
+			class ZZ { // Символы, генерируемые кодером
+			public:
+				uint8_t val0;
+				uint8_t val1;
+
+				void init(uint8_t val0, uint8_t val1) {
+					this->val0 = val0;
+					this->val1 = val1;
+				}
+
+				ZZ() {
+					this->val0 = 0;
+					this->val1 = 0;
+
+				}
+
+
+			};
+
+
+		};
+
+		Grid grid;
+
+		Decoder_Viterbi(uint8_t number, const vector<uint8_t>& polynoms, int register_size) :Viterbi(number, polynoms){
+			this->register_size = register_size;
+			
+			this->grid.init(register_size);
+
+			uint8_t val0 = 0, val1 = 0;
+
+			for (int i = 0; i < register_size-1; i++)
+			{
+				
+				uint8_t temp = i;
+				
+				if (get_High_Bit_Position(temp) == 0) {
+					val0 = sumBit(temp, polynoms);
+					val1 - sumBit(setBit(temp, get_High_Bit_Position(temp-1)),polynoms);
+
+				}
+				else {
+
+					val0 = sumBit(resetBit(temp, get_High_Bit_Position(temp - 1)), polynoms);
+					val1 = sumBit(temp, polynoms);
+
+				}
+
+				grid.array..init(val0, val1);
+
+			}
+
+			grid.print();
+
+		}
 
 	};
 
@@ -79,12 +164,14 @@ public:
 		setlocale(LC_ALL, "ru");
 
 		vector<uint8_t> pol = { 15,13 };
-		uint8_t ex = 0b1010; //               ЗАМЕТКА: написать исключение, когда пытаются ввести число больше размера регистра
+		uint8_t ex = 0b11111000; //               ЗАМЕТКА: написать исключение, когда пытаются ввести число больше размера регистра
 
 		Coder_Viterbi v(ex,pol);
 
+		Decoder_Viterbi dv(ex, pol,4);
 
-		cout << bitset<sizeof(uint8_t) * 8>(v.coding(ex, pol));
+
+		//cout << bitset<sizeof(uint8_t) * 8>(v.coding(ex, pol));
 
 
 		return 0;
@@ -166,10 +253,10 @@ public:
 			{
 				n = number;
 
-				//cout << "sumBit number before:" << bitset<sizeof(uint8_t) * 8>(n) << endl << endl;
+				
 
 				n = n & polynoms[i];
-				// cout << "sumBit number after:" << bitset<sizeof(uint8_t) * 8>(n) << endl << endl;
+				
 				result = result << 1;
 
 				for (int j = 0; j < get_High_Bit_Position(n); j++)
@@ -181,15 +268,11 @@ public:
 
 			}
 
-			//cout << "sumBit RESULT:" << bitset<sizeof(uint8_t) * 8>(result) << endl << endl;
-
-
-
 			return result;
 		
 	}
 
-	int Viterbi::get_Registr_Size(const vector<uint8_t>& polynoms) // получить размер сдвивого регистра
+	int Coder_Viterbi::get_Registr_Size(const vector<uint8_t>& polynoms) // получить размер сдвивого регистра
 	{
 
 			int result = 0;
@@ -209,18 +292,14 @@ public:
 			
 			uint16_t result = 0;
 			int i = 0; 
-			int divider = pow(2, registr_size);
+			int divider = pow(2, register_size);
 			uint8_t registr = number % divider;
 
-			while (i < registr_size) {
+			while (i < register_size) {
 
-				//cout << "Registr:" << bitset<sizeof(uint8_t) * 8>(registr) << endl << endl;
-				//cout << "Result before:" << bitset<sizeof(uint8_t) * 8>(result) << endl << endl;
 				result = result << polynoms.size();
 
 				result |= sumBit(registr % divider, polynoms);
-
-				//cout << "Result after:" << bitset<sizeof(uint8_t) * 8>(result) << endl << endl;
 
 				registr = registr << 1;
 
@@ -229,7 +308,6 @@ public:
 
 			return inverseNumber(result, i*2);
 
-			
-
-		
 	}
+
+
