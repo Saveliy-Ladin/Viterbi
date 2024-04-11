@@ -81,21 +81,23 @@ public:
 			class ZZ;
 
 			int size;
-			vector<ZZ> array;
+			ZZ *array = new ZZ[size];
 			
 
 			void print() {
 				for (int i = 0; i < size; i++)
 				{
-				cout << bitset<sizeof(uint8_t) * 8>(i) <<"/t"<<"val0 = "<<array.at(i).val0 << "| val1 = " << array.at(i).val1 << endl;
+					//cout << i << "\t" << "val0 = " << static_cast<int>(array[i].val0) << "| val1 = " << static_cast<int>(array[i].val1) << endl;
+				cout << bitset<sizeof(uint8_t) * 8>(i) << "\t" << "val0 = " << bitset<sizeof(uint8_t) * 8>(array[i].val0) << "| val1 = " << bitset<sizeof(uint8_t) * 8>(array[i].val1) << endl;
 
+					//cout << i << endl;
 				}
 
 			}
 
 			void init(int size) {
 				this->size = size;
-				array.reserve(size);
+				//array.reserve(size);
 			}
 			
 			Grid() {
@@ -126,35 +128,35 @@ public:
 
 		Grid grid;
 
-		Decoder_Viterbi(uint8_t number, const vector<uint8_t>& polynoms, int register_size) :Viterbi(number, polynoms){
+		void print() {
+
+			grid.print();
+
+		}
+
+		Decoder_Viterbi(uint8_t number, const vector<uint8_t>& polynoms, int register_size) : Viterbi(number, polynoms){
 			this->register_size = register_size;
 			
-			this->grid.init(register_size);
+			int a = pow(2, register_size-1);
+
+			this->grid.init(a);
 
 			uint8_t val0 = 0, val1 = 0;
 
-			for (int i = 0; i < register_size-1; i++)
+			for (int i = 0; i < a; i++)
 			{
 				
 				uint8_t temp = i;
 				
-				if (get_High_Bit_Position(temp) == 0) {
 					val0 = sumBit(temp, polynoms);
-					val1 - sumBit(setBit(temp, get_High_Bit_Position(temp-1)),polynoms);
+					val1 = sumBit(setBit(temp, register_size-1),polynoms);
 
-				}
-				else {
-
-					val0 = sumBit(resetBit(temp, get_High_Bit_Position(temp - 1)), polynoms);
-					val1 = sumBit(temp, polynoms);
-
-				}
-
-				grid.array..init(val0, val1);
+				grid.array[i].init(val0, val1);
 
 			}
 
-			grid.print();
+		
+			//this->grid.print();
 
 		}
 
@@ -166,11 +168,12 @@ public:
 		vector<uint8_t> pol = { 15,13 };
 		uint8_t ex = 0b11111000; //               ЗАМЕТКА: написать исключение, когда пытаются ввести число больше размера регистра
 
-		Coder_Viterbi v(ex,pol);
+		//Coder_Viterbi v(ex,pol);
 
-		Decoder_Viterbi dv(ex, pol,4);
+		Decoder_Viterbi dv(ex,pol,4);
+		dv.print();
 
-
+		
 		//cout << bitset<sizeof(uint8_t) * 8>(v.coding(ex, pol));
 
 
@@ -252,14 +255,11 @@ public:
 			for (int i = 0; i < polynoms.size(); i++)
 			{
 				n = number;
-
-				
-
 				n = n & polynoms[i];
 				
 				result = result << 1;
 
-				for (int j = 0; j < get_High_Bit_Position(n); j++)
+				for (int j = 0; j <register_size; j++)
 				{
 					temp = getBit(n, j);
 					result ^= temp;
