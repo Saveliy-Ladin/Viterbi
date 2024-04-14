@@ -11,6 +11,14 @@ using namespace std;
 
 void enter(string str, char delimitr, vector<uint8_t> & result);
 
+ uint8_t get_bit(uint8_t num, int index);
+
+ uint8_t set_bit(uint8_t num, int index);
+
+ uint8_t reset_bit(uint8_t num, int index);
+
+ uint8_t inverse_bit(uint8_t num, int index);
+
 class Viterbi {
 protected: 
 
@@ -27,14 +35,6 @@ protected:
 	static int get_high_bit_position(uint8_t num);
 
 	static int get_registr_size(const vector<uint8_t>& polynoms);
-
-	static uint8_t get_bit(uint8_t num, int index);
-
-	static uint8_t set_bit(uint8_t num, int index);
-
-	static uint8_t reset_bit(uint8_t num, int index);
-
-	static uint8_t inverse_bit(uint8_t num, int index);
 
 	static uint8_t inverse_number(uint8_t num, int size);
 

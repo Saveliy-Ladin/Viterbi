@@ -2,6 +2,26 @@
 
 using namespace std;
 
+void enter(string str, char delimiter, vector<uint8_t>& result) {
+
+	vector<string> out;
+
+	stringstream string_stream(str);
+
+	string polynom;
+
+	while (getline(string_stream, polynom, delimiter)) {
+		out.push_back(polynom);
+	}
+
+	for (vector<string>::iterator it = out.begin(); it != out.end(); it++) {
+
+		result.push_back(stoi(*it));
+
+	}
+
+}
+
 	Viterbi::Viterbi(const vector<uint8_t>& polynoms) // Конструктор базового класса
 	{
 			this->polynoms = polynoms;
@@ -22,31 +42,6 @@ using namespace std;
 
 			return result;
 	
-	}
-
-	uint8_t Viterbi::get_bit(uint8_t number, int index) // Получить значения бита по индексу
-	{
-			number = number & (1 << index);
-
-			number = number >> index;
-
-			return number;
-
-	}
-
-	uint8_t Viterbi::set_bit(uint8_t number, int index) // Установить бит по индексу в единицу
-	{
-		return number |(1 << index);
-	}
-
-	uint8_t Viterbi::reset_bit(uint8_t number, int index) // Установить бит по индексу в ноль
-	{
-		return number &~(1 << index);
-	}
-
-	uint8_t Viterbi::inverse_bit(uint8_t number, int index) // Инверсия бита по индексу
-	{
-		return number^(1<<index);
 	}
 
 	uint8_t Viterbi::inverse_number(uint8_t number, int size) // Инверсия кодируемого числа
@@ -184,7 +179,7 @@ using namespace std;
 
 	void Coder_Viterbi::print_result() // Вывод результата кодирования в консоль
 	{
-		cout << "Coding result: " << bitset<sizeof(uint8_t) * 8>(inverse_number(number, register_size)) << " -> "<< bitset<sizeof(uint16_t) * 8>(result);
+		cout << "Результат кодирования: " << bitset<sizeof(uint8_t) * 8>(inverse_number(number, register_size)) << " -> "<< bitset<sizeof(uint16_t) * 8>(result);
 
 	}
 
@@ -203,7 +198,7 @@ using namespace std;
 
 		gird.find_way();
 
-		//gird.print_way();
+		gird.print_way();
 
 	}
 
@@ -269,7 +264,7 @@ using namespace std;
 
 		}
 
-		cout << "Result:" << bitset<sizeof(uint8_t) * 8>(result);
+		cout << "Результат кодирования: " << bitset<sizeof(uint8_t) * 8>(inverse_number(number, get_registr_size(polynoms))) << " -> " << bitset<sizeof(uint16_t) * 8>(result);
 
 	}
 
@@ -361,5 +356,29 @@ using namespace std;
 
 	}
 
+	uint8_t get_bit(uint8_t number, int index) // Получить значения бита по индексу
+	{
+		number = number & (1 << index);
+
+		number = number >> index;
+
+		return number;
+
+	}
+
+	uint8_t set_bit(uint8_t number, int index) // Установить бит по индексу в единицу
+	{
+		return number | (1 << index);
+	}
+
+	uint8_t reset_bit(uint8_t number, int index) // Установить бит по индексу в ноль
+	{
+		return number & ~(1 << index);
+	}
+
+	uint8_t inverse_bit(uint8_t number, int index) // Инверсия бита по индексу
+	{
+		return number ^ (1 << index);
+	}
 
 

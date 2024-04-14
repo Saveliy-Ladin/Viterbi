@@ -128,7 +128,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="ConsoleApplication2.cpp" />
-    <ClCompile Include="Source.cpp" />
+    <ClCompile Include="main.cpp" />
     <ClCompile Include="Viterbi.cpp" />
   </ItemGroup>
   <ItemGroup>
