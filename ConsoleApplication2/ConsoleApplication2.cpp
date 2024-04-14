@@ -2,23 +2,6 @@
 
 using namespace std;
 
-char* enter() {
-	char *ent = new char[30];
-
-	cout << "Введите генерирующие полиномы через запятую:" << endl;
-	cin.getline(ent, 30);
-	
-	return ent;
-}
-
-	
-
-
-          //ЗАМЕТКА: написать исключение, когда пытаются ввести число больше размера регистра
-
-
-
-
 	Viterbi::Viterbi(const vector<uint8_t>& polynoms) // Конструктор базового класса
 	{
 			this->polynoms = polynoms;
@@ -138,7 +121,7 @@ char* enter() {
 			}
 
 			return result;
-		
+
 	}
 
 	int Viterbi::get_registr_size(const vector<uint8_t>& polynoms) // Получить размер сдвивого регистра
@@ -154,22 +137,16 @@ char* enter() {
 		
 	}
 
-	Coder_Viterbi::Coder_Viterbi(uint8_t number, const vector<uint8_t>& polynoms) : Viterbi(polynoms) { // Конструктор кодера
+	Coder_Viterbi::Coder_Viterbi(uint8_t number, vector<uint8_t> polynoms) : Viterbi(polynoms) { // Конструктор кодера
 
 		if (get_high_bit_position(number) > get_registr_size(polynoms)) 
 
 			throw 1;
-
 		
-		
-
-
 		this->number = inverse_number(number, get_registr_size(polynoms));
 
 		this->register_size = get_registr_size(polynoms);
-
 		
-
 		coding();
 
 	}
@@ -177,9 +154,10 @@ char* enter() {
 
 	uint16_t Coder_Viterbi::coding() // Процесс кодирования
 	{		
-		cout<<endl<< bitset<sizeof(uint8_t) * 8>(number)<<endl;
-			
+			reverse(polynoms.begin(), polynoms.end());
+
 			uint16_t result = 0;
+
 			int i = 0; 
 
 			int divider = pow(2, register_size);
@@ -210,7 +188,10 @@ char* enter() {
 
 	}
 
-	Decoder_Viterbi::Decoder_Viterbi(uint8_t number, const vector<uint8_t>& polynoms, int register_size) : Viterbi(polynoms) { // Конструктор декодера
+	Decoder_Viterbi::Decoder_Viterbi(uint16_t number, int register_size, const vector<uint8_t>& polynoms) : Viterbi(polynoms) { // Конструктор декодера
+
+		// исключение через подсчет символа вводимой строки
+
 
 		this->number = inverse_code(number, register_size, polynoms);
 
@@ -351,7 +332,6 @@ char* enter() {
 
 			//cout << "----------------" << endl;
 		}
-
 
 	}
 

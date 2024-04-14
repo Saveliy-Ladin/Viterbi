@@ -2,11 +2,14 @@
 #include <iostream>
 #include <bitset>
 #include <string>
+#include <sstream>
 #include <cstring>
 #include <algorithm>
 #include <vector>
 
 using namespace std;
+
+void enter(string str, char delimitr, vector<uint8_t> & result);
 
 class Viterbi {
 protected: 
@@ -44,7 +47,7 @@ protected:
 class Coder_Viterbi : public Viterbi {
 public:
 
-	Coder_Viterbi(uint8_t number, const vector<uint8_t>& polynoms);
+	Coder_Viterbi(uint8_t number, vector<uint8_t> polynoms);
 
 	uint16_t coding();
 
@@ -104,7 +107,6 @@ public:
 
 			uint8_t getter_path();
 
-
 		};
 
 
@@ -122,6 +124,6 @@ public:
 
 public:
 
-	Decoder_Viterbi(uint8_t number, const vector<uint8_t>& polynoms, int register_size);
+	Decoder_Viterbi(uint16_t number, int register_size, const vector<uint8_t>& polynoms);
 
 };
