@@ -110,8 +110,6 @@ public:
 
 			uint8_t past_right_value = 0;
 
-			
-
 
 		public:
 
@@ -143,9 +141,6 @@ public:
 
 			uint8_t getter_path();
 			
-		
-
-
 		};
 
 	public:

@@ -1,10 +1,6 @@
 ﻿#include "Viterbi.h"
 
-
-
 using namespace std;
-
-
 
 void enter(string str, char delimiter, vector<uint8_t>& result) {
 
@@ -164,7 +160,6 @@ void enter(string str, char delimiter, vector<uint8_t>& result) {
 
 	}
 
-
 	uint16_t Coder_Viterbi::coding() // Процесс кодирования
 	{		
 			reverse(polynoms.begin(), polynoms.end());
@@ -264,9 +259,6 @@ void enter(string str, char delimiter, vector<uint8_t>& result) {
 
 	uint8_t Decoder_Viterbi::Gird::Way::getter_path() { return path; }
 
-
-	
-
 	uint8_t Decoder_Viterbi::Gird::Way::getter_result() {
 
 		return result;
@@ -303,11 +295,10 @@ void enter(string str, char delimiter, vector<uint8_t>& result) {
 				min = it;
 			}
 			
-
 		}
 
 		cout << "\nРезультат декодирования: " << bitset<sizeof(uint8_t) * 8>(inverse_number(number, get_register_size(polynoms)* polynoms.size())) << " -> " << bitset<sizeof(uint16_t) * 8>(min->result);
-		
+	
 	}
 
 	void Decoder_Viterbi::Gird::setter(uint16_t number, int register_size, const vector<uint8_t>& polynoms)
@@ -326,20 +317,19 @@ void enter(string str, char delimiter, vector<uint8_t>& result) {
 
 			uint8_t way = i;
 
-			j->setter_number(way);
+			j->number = way;
 
-			j->setter_left_next_number(way >> 1);
+			j->left_next_number = way >> 1;
 
-			j->setter_right_next_number(set_bit(way >> 1, get_register_size(polynoms) - 2));
+			j->right_next_number = set_bit(way >> 1, get_register_size(polynoms) - 2);
 		
-			j->setter_left_value(sum_bit(way, polynoms));
+			j->left_value = sum_bit(way, polynoms);
 
-			j->setter_right_value(sum_bit(set_bit( way, get_register_size(polynoms) - 1), polynoms) );
+			j->right_value = sum_bit(set_bit( way, get_register_size(polynoms) - 1), polynoms) ;
 
 		}
 
 	}
-
 
 	void Decoder_Viterbi::Gird::find_way() { // Декодирование по расчетной решетке
 
@@ -349,272 +339,186 @@ void enter(string str, char delimiter, vector<uint8_t>& result) {
 
 		for (int i = 0; i < get_register_size(polynoms); i++) {
 
-			cout << endl << "Step - " << i << endl;
-
 			uint8_t metric = number;
 
 			metric = metric % divider;
 
-			metric = inverse_number(metric,polynoms.size());
-
-			cout << "Metric - " << static_cast<int>(metric) << endl;
+			metric = inverse_number(metric,polynoms.size()); // метрика на каждом шаге
 
 
 			for (vector<Way>::iterator this_way = map.begin(); this_way != map.end(); this_way++)
-			{
-			
-			
-				cout << "\n\n\nNumber before: " << bitset<sizeof(uint8_t) * 8>(this_way->getter_number())<<endl;
+			{			
 
-				cout << "\nLeft next: " << bitset<sizeof(uint8_t) * 8>(this_way->getter_left_next_number()) << " - Left value: " << bitset<sizeof(uint8_t) * 8>(this_way->getter_left_value()) << endl;
-
-				cout << "\nRight next: " << bitset<sizeof(uint8_t) * 8>(this_way->getter_right_next_number()) << " - Righ value: " << bitset<sizeof(uint8_t) * 8>(this_way->right_value) << endl;
-
-				cout << "\nPath before: " << static_cast<int>(this_way->getter_path()) << endl;
-
-				if (this_way->getter_number() % 2 == 0) {
-
-
+				if (this_way->number % 2 == 0) {			// Декодирование происходит путем разбияния чисел на четные и нечетные пары: 000 и 001, 010 и 011 и т.д.
 
 					for (vector<Way>::iterator neighbour_way = map.begin(); neighbour_way != map.end(); neighbour_way++)
 					{
+						if (this_way->number + 1 == neighbour_way->number) { // Условия нахождения соседней пары для четного числа
 
-
-
-
-						if (this_way->getter_number() + 1 == neighbour_way->getter_number()) {
-
-
-
-
-							if (this_way->left_value == neighbour_way->left_value && this_way->right_value == neighbour_way->right_value) {
-
-								
+							if (this_way->left_value == neighbour_way->left_value && this_way->right_value == neighbour_way->right_value) {  // Условие, если соседний путь был перестроен
 
 								for (int i = 0; i < polynoms.size(); i++) {
 
-									cout << "inverse\n";
 									neighbour_way->left_value = inverse_bit(neighbour_way->left_value, i);
+
 									neighbour_way->right_value = inverse_bit(neighbour_way->right_value, i);
-
-									
-
-
 
 								}
 							}
 
-							cout << endl <<"Neighbour Numbers: " << bitset<sizeof(uint8_t) * 8>(neighbour_way->getter_number()) << endl;
-
-							cout << endl << "Neighbour next left: " << bitset<sizeof(uint8_t) * 8>(neighbour_way->left_next_number) << endl;
-
-							cout << endl << "Neighbour next right: " << bitset<sizeof(uint8_t) * 8>(neighbour_way->right_next_number) << endl;
-
-							cout << endl << "Neighbour left value: " << bitset<sizeof(uint8_t) * 8>(neighbour_way->left_value) << endl;
-
-							cout << endl << "Neighbour right value: " << bitset<sizeof(uint8_t) * 8>(neighbour_way->right_value) << endl;
-
-
-							if ( this_way->getter_path() + hamming_distance(this_way->getter_left_value() ^ metric, polynoms.size()) <= neighbour_way->getter_path() + hamming_distance(neighbour_way->getter_left_value() ^ metric, polynoms.size())) {
-
-								cout << endl<<"Left" << bitset<sizeof(uint8_t) * 8>(this_way->getter_path() + hamming_distance(this_way->getter_left_value() ^ metric, polynoms.size())) << " <= " << bitset<sizeof(uint8_t) * 8>(neighbour_way->getter_path() + hamming_distance(neighbour_way->getter_left_value() ^ metric, polynoms.size())) << endl;
+							if ( this_way->path + hamming_distance(this_way->left_value ^ metric, polynoms.size()) <= neighbour_way->path + hamming_distance(neighbour_way->left_value ^ metric, polynoms.size())) { // Условие расчета метрик ветвей
 
 								this_way->past_path = this_way->path;
 
-								this_way->path += hamming_distance(this_way->getter_left_value() ^ metric, polynoms.size());
+								this_way->path += hamming_distance(this_way->left_value ^ metric, polynoms.size());
 
-								this_way->past_number = this_way->getter_number();
+								this_way->past_number = this_way->number;
 
 								this_way->past_next_left_number = this_way->left_next_number;
 
 								this_way->past_next_right_number = this_way->right_next_number;
 
-								this_way->past_left_value = this_way->getter_left_value();
+								this_way->past_left_value = this_way->left_value;
 
-								this_way->past_right_value = this_way->getter_right_value();
+								this_way->past_right_value = this_way->right_value;
 
-								this_way->setter_number(this_way->getter_left_next_number());
+								this_way->number = this_way->left_next_number;
 
-								this_way->setter_result(get_bit(this_way->getter_number(), get_register_size(polynoms) - 2));
+								this_way->setter_result(get_bit(this_way->number, get_register_size(polynoms) - 2));
 
-								this_way->setter_left_next_number(this_way->getter_number() >> 1);
+								this_way->left_next_number = this_way->number >> 1;
 
-								this_way->setter_right_next_number(set_bit(this_way->getter_number() >> 1, get_register_size(polynoms) - 2));
+								this_way->right_next_number = set_bit(this_way->number >> 1, get_register_size(polynoms) - 2);
 
-								this_way->setter_left_value(sum_bit(this_way->getter_number(), polynoms));
+								this_way->left_value = sum_bit(this_way->number, polynoms);
 
-								this_way->setter_right_value(sum_bit(set_bit(this_way->getter_number(), get_register_size(polynoms) - 1), polynoms));
-								
+								this_way->right_value = sum_bit(set_bit(this_way->number, get_register_size(polynoms) - 1), polynoms);
 
 								break;
 
 							}
-							else if (this_way->getter_path() + (hamming_distance(this_way->getter_right_value() ^ metric, polynoms.size())) <= neighbour_way->getter_path() + hamming_distance(neighbour_way->getter_right_value() ^ metric, polynoms.size())) {
-
-								cout << endl<<"Right" << bitset<sizeof(uint8_t) * 8>(this_way->getter_path() + hamming_distance(this_way->getter_right_value() ^ metric, polynoms.size())) << " <= " << bitset<sizeof(uint8_t) * 8>(neighbour_way->getter_path() + hamming_distance(neighbour_way->getter_right_value() ^ metric, polynoms.size())) << endl;
+							else if (this_way->path + (hamming_distance(this_way->right_value ^ metric, polynoms.size())) <= neighbour_way->path + hamming_distance(neighbour_way->right_value ^ metric, polynoms.size())) { // Условие расчета метрик ветвей
 
 								this_way->past_path = this_way->path;
 
-								this_way->path += hamming_distance(this_way->getter_right_value() ^ metric, polynoms.size());
+								this_way->path += hamming_distance(this_way->right_value ^ metric, polynoms.size());
 
-								this_way->past_number = this_way->getter_number();
+								this_way->past_number = this_way->number;
 
 								this_way->past_next_left_number = this_way->left_next_number;
 
 								this_way->past_next_right_number = this_way->right_next_number;
 
-								this_way->past_left_value = this_way->getter_left_value();
+								this_way->past_left_value = this_way->left_value;
 
-								this_way->past_right_value = this_way->getter_right_value();
+								this_way->past_right_value = this_way->right_value;
 
-								this_way->setter_number(this_way->getter_right_next_number());
+								this_way->number = this_way->right_next_number;
 
-								this_way->setter_result(get_bit(this_way->getter_number(), get_register_size(polynoms) - 2));
+								this_way->setter_result(get_bit(this_way->number, get_register_size(polynoms) - 2));
 
-								this_way->setter_left_next_number(this_way->getter_number() >> 1);
+								this_way-> left_next_number = this_way->number >> 1;
 
-								this_way->setter_right_next_number(set_bit(this_way->getter_number() >> 1, get_register_size(polynoms) - 2));
+								this_way-> right_next_number = set_bit(this_way->number >> 1, get_register_size(polynoms) - 2);
 
-								this_way->setter_left_value(sum_bit(this_way->getter_number(), polynoms));
+								this_way->left_value = sum_bit(this_way->number, polynoms);
 
-								this_way->setter_right_value(sum_bit(set_bit(this_way->getter_number(), get_register_size(polynoms) - 1), polynoms));
+								this_way->right_value = sum_bit(set_bit(this_way->number, get_register_size(polynoms) - 1), polynoms);
 
 								break;
 							}
 
-							else {
+							else { // Условие для перестроения пути, если ни одна из веток не прошла предыдущие условия
 
-								cout << "else" << endl;
-
-								this_way->setter_number(neighbour_way->number);
+								this_way->number = neighbour_way->number;
 
 								this_way->result = neighbour_way->result;
 
-								
-								this_way->setter_left_next_number(this_way->getter_number() >> 1);
+								this_way->left_next_number = this_way->number >> 1;
 
-								this_way->setter_right_next_number(set_bit(this_way->getter_number() >> 1, get_register_size(polynoms) - 2));
+								this_way->right_next_number = set_bit(this_way->number >> 1, get_register_size(polynoms) - 2);
 
-								this_way->setter_left_value(sum_bit(this_way->getter_number(), polynoms));
+								this_way->left_value = sum_bit(this_way->number, polynoms);
 
-								this_way->setter_right_value(sum_bit(set_bit(this_way->getter_number(), get_register_size(polynoms) - 1), polynoms));
-
-
+								this_way->right_value = sum_bit(set_bit(this_way->number, get_register_size(polynoms) - 1), polynoms);
 								
 
-								if (this_way->getter_path() + hamming_distance(this_way->getter_left_value() ^ metric, polynoms.size()) > (this_way->getter_path() + hamming_distance(this_way->getter_right_value() ^ metric, polynoms.size()))) {
+								if (this_way->path + hamming_distance(this_way->left_value ^ metric, polynoms.size()) >= (this_way->path + hamming_distance(this_way->right_value ^ metric, polynoms.size()))) { ///////////////////////////////////////////////////////
 
-								
-								//	this_way->past_path = this_way->path;
+									this_way->path += hamming_distance(this_way->left_value ^ metric, polynoms.size());
 
-									this_way->path += hamming_distance(this_way->getter_left_value() ^ metric, polynoms.size());
-
-									this_way->past_number = this_way->getter_number();
+									this_way->past_number = this_way->number;
 
 									this_way->past_next_left_number = this_way->left_next_number;
 
 									this_way->past_next_right_number = this_way->right_next_number;
 
-									this_way->past_left_value = this_way->getter_left_value();
+									this_way->past_left_value = this_way->left_value;
 
-									this_way->past_right_value = this_way->getter_right_value();
+									this_way->past_right_value = this_way->right_value;
 
-									this_way->setter_number(this_way->getter_left_next_number());
+									this_way->number = this_way->left_next_number;
 
-									this_way->setter_result(get_bit(this_way->getter_number(), get_register_size(polynoms) - 2));
+									this_way->setter_result(get_bit(this_way->number, get_register_size(polynoms) - 2));
 
-									this_way->setter_left_next_number(this_way->getter_number() >> 1);
+									this_way->left_next_number = this_way->number >> 1;
 
-									this_way->setter_right_next_number(set_bit(this_way->getter_number() >> 1, get_register_size(polynoms) - 2));
+									this_way->right_next_number = set_bit(this_way->number >> 1, get_register_size(polynoms) - 2);
 
-									this_way->setter_left_value(sum_bit(this_way->getter_number(), polynoms));
+									this_way->left_value = sum_bit(this_way->number, polynoms);
 
-									this_way->setter_right_value(sum_bit(set_bit(this_way->getter_number(), get_register_size(polynoms) - 1), polynoms));
-
+									this_way->right_value = sum_bit(set_bit(this_way->number, get_register_size(polynoms) - 1), polynoms);
 
 									break;
 
 								}
-								else if (this_way->getter_path() + (hamming_distance(this_way->getter_right_value() ^ metric, polynoms.size())) > this_way->getter_path() + hamming_distance(this_way->getter_left_value() ^ metric, polynoms.size())) {
+								else if (this_way->path + (hamming_distance(this_way->right_value ^ metric, polynoms.size())) >= this_way->path + hamming_distance(this_way->left_value ^ metric, polynoms.size())) { ////////////////////
 
-									cout << endl << bitset<sizeof(uint8_t) * 8>(this_way->getter_path() + hamming_distance(this_way->getter_right_value() ^ metric, polynoms.size())) << " <= " << bitset<sizeof(uint8_t) * 8>(neighbour_way->getter_path() + hamming_distance(neighbour_way->getter_right_value() ^ metric, polynoms.size())) << endl;
+									this_way->path += hamming_distance(this_way->right_value ^ metric, polynoms.size());
 
-									//this_way->past_path = this_way->path;
-
-									this_way->path += hamming_distance(this_way->getter_right_value() ^ metric, polynoms.size());
-
-									this_way->past_number = this_way->getter_number();
+									this_way->past_number = this_way->number;
 
 									this_way->past_next_left_number = this_way->left_next_number;
 
 									this_way->past_next_right_number = this_way->right_next_number;
 
-									this_way->past_left_value = this_way->getter_left_value();
+									this_way->past_left_value = this_way->left_value;
 
-									this_way->past_right_value = this_way->getter_right_value();
+									this_way->past_right_value = this_way->right_value;
 
-									this_way->setter_number(this_way->getter_right_next_number());
+									this_way->number = this_way->right_next_number;
 
-									this_way->setter_result(get_bit(this_way->getter_number(), get_register_size(polynoms) - 2));
+									this_way->setter_result(get_bit(this_way->number, get_register_size(polynoms) - 2));
 
-									this_way->setter_left_next_number(this_way->getter_number() >> 1);
+									this_way->left_next_number = this_way->number >> 1;
 
-									this_way->setter_right_next_number(set_bit(this_way->getter_number() >> 1, get_register_size(polynoms) - 2));
+									this_way->right_next_number = set_bit(this_way->number >> 1, get_register_size(polynoms) - 2);
 
-									this_way->setter_left_value(sum_bit(this_way->getter_number(), polynoms));
+									this_way->left_value = sum_bit(this_way->number, polynoms);
 
-									this_way->setter_right_value(sum_bit(set_bit(this_way->getter_number(), get_register_size(polynoms) - 1), polynoms));
+									this_way->right_value = sum_bit(set_bit(this_way->number, get_register_size(polynoms) - 1), polynoms);
 
 									break;
 								}
-
 
 								break;
 
 							}
 
-
-
 						}
 
-
 					}
-
-					cout << "\n\n\nNumber after: " << bitset<sizeof(uint8_t) * 8>(this_way->getter_number()) << endl;
-
-					cout << "\nPast number: " << bitset<sizeof(uint8_t) * 8>(this_way->past_number) << endl;
-
-					cout << "\nLeft next: " << bitset<sizeof(uint8_t) * 8>(this_way->getter_left_next_number()) << " - Left value: " << bitset<sizeof(uint8_t) * 8>(this_way->getter_left_value()) << endl;
-
-					cout << "\nRight next: " << bitset<sizeof(uint8_t) * 8>(this_way->getter_right_next_number()) << " - Righ value: " << bitset<sizeof(uint8_t) * 8>(this_way->right_value) << endl;
-
-					
-
-					cout << "\nPast path: " << bitset<sizeof(uint8_t) * 8>(this_way->past_path) << endl;
-
-					cout << "\nPath after : " << static_cast<int>(this_way->getter_path()) << endl;
 
 					continue;
 
 				}
-				 
 
+				else if (this_way->number % 2 != 0) { //Нечетная пара
 
-
-
-
-
-
-
-				else if (this_way->getter_number() % 2 != 0) {
-
-			
 					for (vector<Way>::iterator neighbour_way = map.begin(); neighbour_way != map.end(); neighbour_way++)
 					{
-					//	cout << endl << "Neighbour number: " << bitset<sizeof(uint8_t) * 8>(neighbour_way->getter_number()) << endl;
-					//	cout << endl << bitset<sizeof(uint8_t) * 8>(this_way->getter_number()) << " = " << bitset<sizeof(uint8_t) * 8>(neighbour_way->past_number) <<" + " << "1" << endl;
 						
-					if(this_way->left_next_number == neighbour_way->past_next_left_number && this_way->right_next_number == neighbour_way->past_next_right_number) {
+					if(this_way->left_next_number == neighbour_way->past_next_left_number && this_way->right_next_number == neighbour_way->past_next_right_number) { // поиск пары по её предыдущим значения ветвей
 
 
 						if (this_way->left_value == neighbour_way->past_left_value && this_way->right_value == neighbour_way->past_right_value) {
@@ -622,87 +526,64 @@ void enter(string str, char delimiter, vector<uint8_t>& result) {
 							neighbour_way->past_number = this_way->number - 1;
 
 							for (int i = 0; i < polynoms.size(); i++) {
+
 								neighbour_way->past_left_value = inverse_bit(neighbour_way->past_left_value,i);
-								neighbour_way->past_right_value = inverse_bit(neighbour_way->past_right_value, i);
-								
+
+								neighbour_way->past_right_value = inverse_bit(neighbour_way->past_right_value, i);			
 
 							}
 						}
 
-
-							//cout << endl << "Neighbour number: " << bitset<sizeof(uint8_t) * 8>(neighbour_way->getter_number()) << endl;
-
-							//cout << endl << "Neighbour past number: " << bitset<sizeof(uint8_t) * 8>(neighbour_way->past_number) << endl;
-
-							//cout << endl << "Neighbour past next left: " << bitset<sizeof(uint8_t) * 8>(neighbour_way->past_next_left_number) << endl;
-
-							//cout << endl << "Neighbour past next right: " << bitset<sizeof(uint8_t) * 8>(neighbour_way->past_next_right_number) << endl;
-
-							cout << endl << "Neighbour past left value: " << bitset<sizeof(uint8_t) * 8>(neighbour_way->past_left_value) << endl;
-
-							cout << endl << "Neighbour past right value: " << bitset<sizeof(uint8_t) * 8>(neighbour_way->past_right_value) << endl;
-
-							//cout << endl << "Neighbour past path: " << bitset<sizeof(uint8_t) * 8>(neighbour_way->past_path) << endl;
-
-							//cout << endl << bitset<sizeof(uint8_t) * 8>(this_way->getter_number()) << " = " << bitset<sizeof(uint8_t) * 8>(neighbour_way->past_number + 1) << endl;
-							cout << endl << "Left: " << bitset<sizeof(uint8_t) * 8>(this_way->getter_path() + hamming_distance(this_way->getter_left_value() ^ metric, polynoms.size())) << " < " << bitset<sizeof(uint8_t) * 8>(neighbour_way->past_path + hamming_distance(neighbour_way->past_left_value ^ metric, polynoms.size())) << endl;
-							cout << endl << "Right: " << bitset<sizeof(uint8_t) * 8>(this_way->getter_path() + hamming_distance(this_way->getter_right_value() ^ metric, polynoms.size())) << " < " << bitset<sizeof(uint8_t) * 8>(neighbour_way->past_path + hamming_distance(neighbour_way->past_right_value ^ metric, polynoms.size())) << endl;
-
-						if (this_way->getter_path() + hamming_distance(this_way->getter_left_value() ^ metric, polynoms.size()) < neighbour_way->past_path + hamming_distance(neighbour_way->past_left_value ^ metric, polynoms.size())) {
-
-							cout << endl <<"Left: " << bitset<sizeof(uint8_t) * 8>(this_way->getter_path() + hamming_distance(this_way->getter_left_value() ^ metric, polynoms.size())) << " < " << bitset<sizeof(uint8_t) * 8>(neighbour_way->past_path + hamming_distance(neighbour_way->past_left_value ^ metric, polynoms.size())) << endl;
+						if (this_way->path + hamming_distance(this_way->left_value ^ metric, polynoms.size()) < neighbour_way->past_path + hamming_distance(neighbour_way->past_left_value ^ metric, polynoms.size())) { //////////////
 							
 							this_way->past_path = this_way->path;
-							this_way->path += hamming_distance(this_way->getter_left_value() ^ metric, polynoms.size());
-						
 
-							this_way->past_number = this_way->getter_number();
+							this_way->path += hamming_distance(this_way->left_value ^ metric, polynoms.size());
+						
+							this_way->past_number = this_way->number;
 
 							this_way->past_next_left_number = this_way->left_next_number;
 
 							this_way->past_next_right_number = this_way->right_next_number;
 
-							this_way->setter_number(this_way->getter_left_next_number());
+							this_way->number = this_way->left_next_number;
 
-							this_way->setter_result(get_bit(this_way->getter_number(), get_register_size(polynoms) - 2));
+							this_way->setter_result(get_bit(this_way->number, get_register_size(polynoms) - 2));
 
-							this_way->setter_left_next_number(this_way->getter_number() >> 1);
+							this_way->left_next_number = this_way->number >> 1;
 
-							this_way->setter_right_next_number(set_bit(this_way->getter_number() >> 1, get_register_size(polynoms) - 2));
+							this_way->right_next_number = set_bit(this_way->number >> 1, get_register_size(polynoms) - 2);
 
-							this_way->setter_left_value(sum_bit(this_way->getter_number(), polynoms));
+							this_way->left_value = sum_bit(this_way->number, polynoms);
 
-							this_way->setter_right_value(sum_bit(set_bit(this_way->getter_number(), get_register_size(polynoms) - 1), polynoms));
+							this_way->right_value = sum_bit(set_bit(this_way->number, get_register_size(polynoms) - 1), polynoms);
 
 							break;
 						}
-						else if (this_way->getter_path() + (hamming_distance(this_way->getter_right_value() ^ metric, polynoms.size())) <= neighbour_way->past_path + hamming_distance(neighbour_way->past_right_value ^ metric, polynoms.size())) {
-
-							cout << endl <<"Right: " << bitset<sizeof(uint8_t) * 8>(this_way->getter_path() + hamming_distance(this_way->getter_right_value() ^ metric, polynoms.size())) << " < " << bitset<sizeof(uint8_t) * 8>(neighbour_way->past_path + hamming_distance(neighbour_way->past_right_value^ metric, polynoms.size())) << endl;
-
+						else if (this_way->path + (hamming_distance(this_way->right_value ^ metric, polynoms.size())) <= neighbour_way->past_path + hamming_distance(neighbour_way->past_right_value ^ metric, polynoms.size())) {
 
 
 							this_way->past_path = this_way->path;
 
-							this_way->path += hamming_distance(this_way->getter_right_value() ^ metric, polynoms.size());
+							this_way->path += hamming_distance(this_way->right_value ^ metric, polynoms.size());
 
-							this_way->past_number = this_way->getter_number();
+							this_way->past_number = this_way->number;
 
 							this_way->past_next_left_number = this_way->left_next_number;
 
 							this_way->past_next_right_number = this_way->right_next_number;
 
-							this_way->setter_number(this_way->getter_right_next_number());
+							this_way->number = this_way->right_next_number;
 
-							this_way->setter_result(get_bit(this_way->getter_number(), get_register_size(polynoms) - 2));
+							this_way->setter_result(get_bit(this_way->number, get_register_size(polynoms) - 2));
 
-							this_way->setter_left_next_number(this_way->getter_number() >> 1);
+							this_way->left_next_number = this_way->number >> 1;
 
-							this_way->setter_right_next_number(set_bit(this_way->getter_number() >> 1, get_register_size(polynoms) - 2));
+							this_way->right_next_number = set_bit(this_way->number >> 1, get_register_size(polynoms) - 2);
 
-							this_way->setter_left_value(sum_bit(this_way->getter_number(), polynoms));
+							this_way->left_value = sum_bit(this_way->number, polynoms);
 
-							this_way->setter_right_value(sum_bit(set_bit(this_way->getter_number(), get_register_size(polynoms) - 1), polynoms));
+							this_way->right_value = sum_bit(set_bit(this_way->number, get_register_size(polynoms) - 1), polynoms);
 
 							break;
 
@@ -710,27 +591,25 @@ void enter(string str, char delimiter, vector<uint8_t>& result) {
 
 						else {
 
-							cout << "else" << endl;
-
 							if (neighbour_way->number == neighbour_way->past_next_left_number) {
 
-								cout << "\nelse left";
+								this_way->number = neighbour_way->past_next_right_number;
 
-								this_way->setter_number(neighbour_way->past_next_right_number);
 								this_way->path = neighbour_way->past_path + hamming_distance(neighbour_way->past_right_value ^ metric, polynoms.size());
-								this_way->result = neighbour_way->result;
-								cout << endl << bitset<sizeof(uint8_t) * 8>(neighbour_way->past_path + hamming_distance(neighbour_way->past_right_value ^ metric, polynoms.size())) << endl;
 
+								this_way->result = neighbour_way->result;
 
 							}
 							else if (neighbour_way->number == neighbour_way->past_next_right_number) {
-								cout << "\nelse right";
-								this_way->setter_number(neighbour_way->past_next_left_number);
+							
+								this_way->number = neighbour_way->past_next_left_number;
+
 								this_way->path = neighbour_way->past_path + hamming_distance(neighbour_way->past_left_value ^ metric, polynoms.size());
+
 								this_way->result = neighbour_way->result;
 							}
 
-							this_way->setter_result(get_bit(this_way->getter_number(), get_register_size(polynoms) - 2));
+							this_way->setter_result(get_bit(this_way->number, get_register_size(polynoms) - 2));
 
 							this_way->left_next_number = neighbour_way->left_next_number;
 
@@ -750,60 +629,28 @@ void enter(string str, char delimiter, vector<uint8_t>& result) {
 
 						}
 
-						
-
 					}
-					
-					
-					
-					
+		
 					}
-
-
-					cout << "\n\n\nNumber after: " << bitset<sizeof(uint8_t) * 8>(this_way->getter_number()) << endl;
-
-					cout << "\nPast number: " << bitset<sizeof(uint8_t) * 8>(this_way->past_number) << endl;
-
-					cout << "\nLeft next: " << bitset<sizeof(uint8_t) * 8>(this_way->getter_left_next_number()) << " - Left value: " << bitset<sizeof(uint8_t) * 8>(this_way->getter_left_value()) << endl;
-
-					cout << "\nRight next: " << bitset<sizeof(uint8_t) * 8>(this_way->getter_right_next_number()) << " - Righ value: " << bitset<sizeof(uint8_t) * 8>(this_way->right_value) << endl;
-
-
-
-					cout << "\nPast path: " << bitset<sizeof(uint8_t) * 8>(this_way->past_path) << endl;
-
-					cout << "\nPath after : " << static_cast<int>(this_way->getter_path()) << endl;
-
 
 					continue;
 
 				}
-				
-				
-
-
-		
-
-
 
 			}
 
+			//for (vector<Way>::iterator j = map.begin(); j != map.end(); j++)
+			//{
 
-			for (vector<Way>::iterator j = map.begin(); j != map.end(); j++)
-			{
-
-				cout << "\nNumber: " << bitset<sizeof(uint8_t) * 8>(j->getter_number()) << endl;
-				cout << "\n Path: " << static_cast<int>(j->getter_path()) << endl;
-				cout << "\n Result: " << bitset<sizeof(uint8_t) * 8>(j->getter_result()) << endl;
-			}
-
+			//	cout << "\nNumber: " << bitset<sizeof(uint8_t) * 8>(j->getter_number()) << endl;
+			//	cout << "\n Path: " << static_cast<int>(j->getter_path()) << endl;
+			//	cout << "\n Result: " << bitset<sizeof(uint8_t) * 8>(j->getter_result()) << endl;
+			//}
 
 				number = number >> polynoms.size();
 
 		}
 	}
-
-
 
 	uint8_t get_bit(uint8_t number, int index) // Получить значения бита по индексу
 	{

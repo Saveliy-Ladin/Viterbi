@@ -18,7 +18,7 @@ int main() {
 
 	const char ESCAPE = 27, UP = 72, DOWN = 80, ENTER = 13;
 
-	string Menu[] = { "1. Кодирование","2. Декодирование", "3. Выход"};
+	string Menu[] = { "1. Кодирование","2. Декодирование"};
 
 	int active_menu = 0;
 
@@ -70,7 +70,7 @@ int main() {
 				
 				cin >> output_number;
 
-				cout << "Введите через пробел генерирующие полиномы: ";
+				cout << "\nВведите через пробел генерирующие полиномы: ";
 
 				getline(cin, polynom_enter);
 
@@ -142,8 +142,6 @@ int main() {
 
 				double probability_of_error = 0;
 
-
-
 				cout << "Введите код: ";
 
 				cin >> output_number;
@@ -151,7 +149,7 @@ int main() {
 				cout << "\nВведите размер сдвигового регистра: ";
 				cin >> register_size;
 
-				cout << "\nВведите вероятность : ";
+				cout << "\nВведите вероятность ошибки в канале: ";
 
 				cin >> probability_of_error;
 
@@ -162,11 +160,8 @@ int main() {
 				
 				try {
 
-					//cout<<endl<< output_number << endl;
+					if (probability_of_error != 0) { // Реализация возможной ошибки в канале
 
-					if (probability_of_error != 0) {
-
-						cout << endl << "here" << endl;
 
 						for (int i = 0; i < size(output_number); i++) {
 
@@ -179,8 +174,7 @@ int main() {
 						}
 					}
 
-					//cout <<endl<< output_number << endl;
-
+				
 
 					for (int i = 0; i < size(output_number); i++) {
 
@@ -217,7 +211,7 @@ int main() {
 
 					dv.print_result();
 
-					cout << "\n\nНажмите любую клавишу, чтобы выйти в меню" << endl;
+					cout << "\n\nНажмите любую клавишу, чтобы выйти в меню." << endl;
 					_getch();
 
 				}
