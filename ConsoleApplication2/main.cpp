@@ -22,7 +22,6 @@ int main() {
 
 	int active_menu = 0;
 
-
 	while (true) {
 
 		system("CLS");
@@ -77,8 +76,6 @@ int main() {
 
 				try {
 
-					for (int i = 0; i < size(output_number); i++) {
-
 						for (int i = 0; i < size(output_number); i++) {
 
 							if (output_number[i] == '1')
@@ -96,7 +93,7 @@ int main() {
 							else throw '0';
 
 						}
-					}
+				
 
 				input_number >>= 1;
 
@@ -105,7 +102,6 @@ int main() {
 				enter(polynom_enter, ' ', polynoms);
 
 				
-
 					Coder_Viterbi cv(input_number, polynoms);
 
 					cv.print_result();
@@ -130,7 +126,6 @@ int main() {
 
 					_getch();
 
-
 				}
 
 				break;
@@ -145,6 +140,10 @@ int main() {
 
 				uint16_t input_number = 0; string output_number; string polynom_enter;
 
+				double probability_of_error = 0;
+
+
+
 				cout << "Введите код: ";
 
 				cin >> output_number;
@@ -152,11 +151,36 @@ int main() {
 				cout << "\nВведите размер сдвигового регистра: ";
 				cin >> register_size;
 
-				cout << "\nВведите через пробел генерирующие полиномы\n:";
+				cout << "\nВведите вероятность : ";
+
+				cin >> probability_of_error;
+
+				cout << "\nВведите через пробел генерирующие полиномы: ";
 
 				getline(cin, polynom_enter);
+
 				
 				try {
+
+					//cout<<endl<< output_number << endl;
+
+					if (probability_of_error != 0) {
+
+						cout << endl << "here" << endl;
+
+						for (int i = 0; i < size(output_number); i++) {
+
+							if ((probability_of_error * 100 >= (1 + rand() % 100)) && output_number[i] == '1')
+								output_number[i] = '0';
+
+							else if ((probability_of_error * 10 >= rand() % 101) && output_number[i] == '0') {
+								output_number[i] = '1';
+							}
+						}
+					}
+
+					//cout <<endl<< output_number << endl;
+
 
 					for (int i = 0; i < size(output_number); i++) {
 
@@ -179,25 +203,40 @@ int main() {
 					input_number >>= 1;
 
 
+
 					getline(cin, polynom_enter);
 
 					enter(polynom_enter, ' ', polynoms);
 
+					if (register_size * polynoms.size() != size(output_number))
+						throw 1;
+
+
+
 					Decoder_Viterbi dv(input_number, register_size, polynoms);
+
+					dv.print_result();
 
 					cout << "\n\nНажмите любую клавишу, чтобы выйти в меню" << endl;
 					_getch();
+
+				}
+
+				catch (const int ex) {
+
+					cout << "\nНеккоректные данные: длина вводимой информации не соотвествует длине сдвивого регистра!" << endl;
+					cout << "\n\nНажмите любую клавишу, чтобы выйти в меню" << endl;
+					_getch();
+
 				}
 
 				catch(const char ex)	{
-
 
 					cout << "\nНеккоректные данные: в водимой информации должны присутствовать только 0 или 1!" << endl;
 					cout << "\n\nНажмите любую клавишу, чтобы выйти в меню" << endl;
 
 					_getch();
 				
-
 				}
 
 				break;
@@ -209,49 +248,8 @@ int main() {
 
 			break;
 
-
 		}
 	}
-
-
-	
-
-
-
-
-
-
-
-
-
-
-
-
-	/*vector<uint8_t> polynoms;
-
-	string input;
-
-	cout << "Введите через пробел генерирующие пробелы:"<<endl<<endl;
-
-	getline(cin, input);
-
-	enter(input,' ', polynoms);
-
-	cout << "--------------------------------------------------" << endl << endl;
-
-	try {
-
-		Coder_Viterbi cv(0b00001110, polynoms);
-
-		cv.print_result();
-
-	}
-
-	catch (const int ex) {
-
-		cout << "Неккоректные данные: длина вводимой информации превышает длину сдвивого регистра!" << endl;
-
-	}*/
 
 	
 }
